@@ -7,13 +7,50 @@ const port = 5501;
 
 // Define an array of Node.js server files with metadata
 const serverMappings = {
-    "chat.js": { name: "Web: WebSocket Chat", metadata: "Real-time chat application using WebSocket" },
-    "stream.js": { name: "Web: Streaming", metadata: "Live streaming server for web applications" },
-    "techord.js": { name: "Web: Techord", metadata: "Collaborative document editing using WebSocket" },
-    "discord.js": { name: "Discord Bot", metadata: "Bot for Discord server" },
-    "active-user.js": { name: "Web: Active User Tracker", metadata: "Tracks active users on a web application" },
-    "pubslide.js": { name: "Web: Public Slide", metadata: "Displays public slides for web presentations" },
+    "chat.js": { 
+        name: "WebSocket Chat", 
+        metadata: "Real-time chat application using WebSocket" 
+    },
+    
+    "stream.js": { 
+        name: "Streaming Server", 
+        metadata: "Provides live streaming functionality for web applications" 
+    },
+    
+    "techord.js": { 
+        name: "Techord Document Collaboration", 
+        metadata: "Facilitates collaborative document editing using WebSocket" 
+    },
+    
+    "discord.js": { 
+        name: "Discord Bot", 
+        metadata: "A bot designed for Discord server management" 
+    },
+    
+    "active-user.js": { 
+        name: "Active User Tracker", 
+        metadata: "Monitors and tracks active users on a web application" 
+    },
+    
+    "pubslide.js": { 
+        name: "Public Slide Viewer", 
+        metadata: "Displays public slides for web presentations", 
+        url: "http://192.168.1.188:8087/url-sender" 
+    },
+    
+    "active-viewer.js": { 
+        name: "Active User Tracker", 
+        metadata: "Tracks active users on a web application", 
+        url: "http://192.168.1.188:5502/log-viewer" 
+    },
+    
+    "ping-tester.js": { 
+        name: "Ping Tester", 
+        metadata: "Tests and tracks active local IP addresses on a web application", 
+        url: "http://192.168.1.188:5503/ping-tester" 
+    },    
 };
+
 
 // Function to execute shell commands
 function executeCommand(command, callback) {
@@ -138,7 +175,7 @@ app.get('/node-servers', (req, res) => {
 // Display server details and controls
 app.get('/node-server/:serverName', (req, res) => {
     const fileName = req.params.serverName;
-    const { name, metadata } = serverMappings[fileName] || { name: fileName, metadata: "No metadata available" };
+    const { name, metadata, url } = serverMappings[fileName] || { name: fileName, metadata: "No metadata available" };
     const logPath = `logs/${fileName}.log`;
 
     // Read the log file
@@ -224,7 +261,7 @@ app.get('/node-server/:serverName', (req, res) => {
                                 color: white;
                             }
 
-                            a {
+                            .back {
                                 text-decoration: none;
                                 color: #fff;
                                 margin: 0.5em;
@@ -235,9 +272,15 @@ app.get('/node-server/:serverName', (req, res) => {
                                 transition: background-color 0.3s, color 0.3s;
                             }
 
-                            a:hover {
+                            .back:hover {
                                 background-color: #fff;
                                 color: #337ab7;
+                            }
+
+                            .url {
+                                color: #337ab7;
+                                margin: 0.5em;
+                                padding: 0.5em 1em;
                             }
                         </style>
                         <script>
@@ -296,6 +339,7 @@ app.get('/node-server/:serverName', (req, res) => {
                         <main>
                             <h1>${name}</h1>
                             <p>${metadata}</p>
+                            ${url ? `<a href="${url}" target="_blank" class="url">${url}</a></p>` : ''}
                             <pre id="log">${data}</pre>
                             <form method="post" action="/execute-command">
                                 <input type="hidden" name="serverName" value="${fileName}">
@@ -303,7 +347,7 @@ app.get('/node-server/:serverName', (req, res) => {
                                 <button class="restart" type="submit" name="action" value="restart">Restart Server</button>
                                 <button class="stop" type="submit" name="action" value="stop">Stop Server</button>
                             </form>
-                            <a href="/node-servers">Back to Server List</a>
+                            <a href="/node-servers" class="back">Back to Server List</a>
                         </main>
                     </body>
                     </html>
