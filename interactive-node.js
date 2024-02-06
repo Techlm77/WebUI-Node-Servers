@@ -73,22 +73,40 @@ function startAllServers() {
 startAllServers();
 
 // Handle termination signal (Ctrl+C)
-process.on('SIGINT', () => {
+process.on('SIGINT', async () => {
     console.log('\nStopping all servers...');
     
+    // Promisified function to execute command
+    const executeCommandPromise = (command) => {
+        return new Promise((resolve, reject) => {
+            executeCommand(command, (stdout, stderr) => {
+                resolve();
+            });
+        });
+    };
+
+    // Array to store promises for stopping servers
+    const stopPromises = [];
+
     // Stop all servers
     Object.keys(serverMappings).forEach(fileName => {
         const stopCommand = `pkill -F logs/${fileName}.pid && rm -f logs/${fileName}.pid`;
-        executeCommand(stopCommand, () => {
-            console.log(`Server ${fileName} stopped.`);
-        });
+        stopPromises.push(executeCommandPromise(stopCommand));
     });
 
-    // Cleanup: Stop all background processes
-    executeCommand('pkill -f "node"', () => {
+    try {
+        // Wait for all stop commands to complete
+        await Promise.all(stopPromises);
+
+        // Cleanup: Stop all background processes
+        await executeCommandPromise('pkill -f "node"');
+
         console.log('All servers stopped. Exiting...');
         process.exit();
-    });
+    } catch (error) {
+        console.error('Error occurred while stopping servers:', error);
+        process.exit(1);
+    }
 });
 
 // HTML template for the server list
